@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistente Essenza</title>
+<meta name="description" content="Projeto de Brenda Carmosa: agente interno de IA (cenário fictício) que guia a equipe da Clínica Essenza no sistema FluxoCerto, com passo a passo e imagens.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6ede7; --bg-2:#efdcd3; --glass:rgba(255,252,250,.78); --surface:#fffaf7; --surface-2:#f7ebe5;
+    --border:rgba(120,72,82,.16); --text:#3a2530; --muted:#86686f;
+    --brand:#8c4a63; --brand-2:#b9787f; --gold:#b8925a; --sage:#8fa58a; --on-brand:#ffffff;
+    --leaf:rgba(143,165,138,.38); --petal:rgba(201,139,139,.28);
+    --danger:#b4432c; --shadow:0 24px 60px rgba(92,48,64,.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1d1418; --bg-2:#2a1c22; --glass:rgba(40,28,34,.78); --surface:#2a1d23; --surface-2:#33242b;
+      --border:rgba(240,200,210,.14); --text:#f5e9ec; --muted:#c3a6ae;
+      --brand:#e3a3b6; --brand-2:#c98b97; --gold:#d8b27a; --sage:#9fb79a; --on-brand:#2a1d23;
+      --leaf:rgba(159,183,154,.18); --petal:rgba(227,163,182,.14);
+      --danger:#f28b70; --shadow:0 24px 60px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1d1418; --bg-2:#2a1c22; --glass:rgba(40,28,34,.78); --surface:#2a1d23; --surface-2:#33242b;
+    --border:rgba(240,200,210,.14); --text:#f5e9ec; --muted:#c3a6ae;
+    --brand:#e3a3b6; --brand-2:#c98b97; --gold:#d8b27a; --sage:#9fb79a; --on-brand:#2a1d23;
+    --leaf:rgba(159,183,154,.18); --petal:rgba(227,163,182,.14);
+    --danger:#f28b70; --shadow:0 24px 60px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh;color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.55;
+    background:
+      radial-gradient(900px 600px at 0% 0%, var(--petal), transparent 60%),
+      radial-gradient(700px 500px at 100% 100%, var(--leaf), transparent 60%),
+      linear-gradient(160deg, var(--bg), var(--bg-2));
+    background-attachment:fixed;
+  }
+  .serif{font-family:"Cormorant Garamond",Georgia,serif}
+
+  /* Ilustrações botânicas de fundo */
+  .botanic{position:fixed;pointer-events:none;z-index:0;color:var(--sage);opacity:.55}
+  .botanic.tl{top:-30px;left:-40px;width:340px;transform:rotate(-8deg)}
+  .botanic.br{bottom:-50px;right:-40px;width:400px;transform:rotate(172deg)}
+  .orb{position:fixed;border-radius:50%;filter:blur(2px);pointer-events:none;z-index:0}
+  .orb.a{width:220px;height:220px;right:12%;top:9%;background:radial-gradient(circle at 30% 30%, #fff8, var(--petal));}
+  .orb.b{width:120px;height:120px;left:8%;bottom:14%;background:radial-gradient(circle at 30% 30%, #fff6, rgba(184,146,90,.25));}
+  @media (max-width:760px){ .botanic.tl{width:220px} .botanic.br{width:240px} .orb{display:none} }
+
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 20px}
+
+  header{display:flex;align-items:center;gap:12px;padding:20px 0 8px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+  .lotus{width:46px;height:46px;border-radius:50%;background:var(--glass);border:1px solid var(--border);display:grid;place-items:center;color:var(--brand);backdrop-filter:blur(8px)}
+  .brand b{display:block;font-family:"Cormorant Garamond",serif;font-size:26px;font-weight:600;line-height:1;letter-spacing:.5px}
+  .brand small{display:block;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-top:4px}
+  .byline{margin-left:auto;display:flex;align-items:center;gap:10px;background:var(--glass);border:1px solid var(--border);border-radius:999px;padding:6px 14px 6px 6px;text-decoration:none;color:inherit;backdrop-filter:blur(8px);transition:transform .2s}
+  .byline:hover{transform:translateY(-1px)}
+  .byline .mono{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--gold));color:#fff;display:grid;place-items:center;font-family:"Cormorant Garamond",serif;font-weight:600;font-size:15px}
+  .byline span{font-size:12.5px;line-height:1.2}
+  .byline em{display:block;font-style:normal;color:var(--muted);font-size:11px}
+
+  main{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:28px;padding:18px 0 28px;align-items:start}
+  @media (max-width:920px){ main{grid-template-columns:1fr} }
+
+  /* Painel de apresentação */
+  .intro{padding:8px 4px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--brand)}
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--gold)}
+  .intro h1{font-family:"Cormorant Garamond",serif;font-weight:500;font-size:clamp(36px,5vw,54px);line-height:1.02;margin:14px 0 14px}
+  .intro h1 i{color:var(--brand)}
+  .intro p.lead{color:var(--muted);font-size:16px;margin:0 0 22px;max-width:46ch}
+  .topics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 22px;padding:0;list-style:none}
+  .topics li{display:flex;align-items:center;gap:10px;background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:10px 12px;font-size:13.5px;backdrop-filter:blur(8px)}
+  .topics svg{flex:none;color:var(--brand)}
+  .how{background:var(--glass);border:1px solid var(--border);border-radius:18px;padding:16px 18px;backdrop-filter:blur(8px)}
+  .how h2{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:20px;margin:0 0 10px}
+  .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px}
+  .flow span{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:5px 11px}
+  .flow i{color:var(--gold);font-style:normal}
+  .stack{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .stack span{font-size:11px;letter-spacing:.5px;color:var(--muted);border:1px dashed var(--border);border-radius:6px;padding:2px 8px}
+  @media (max-width:920px){
+    body{background-attachment:scroll}
+    .intro h1{font-size:36px}
+    .intro p.lead{margin-bottom:4px}
+    .how,.topics{display:none}
+    .chat{height:78vh}
+  }
+
+  /* Chat */
+  .chat{background:var(--glass);border:1px solid var(--border);border-radius:26px;box-shadow:var(--shadow);display:flex;flex-direction:column;height:min(78vh,760px);min-height:520px;backdrop-filter:blur(14px);overflow:hidden}
+  .chat-top{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);background:linear-gradient(90deg, rgba(255,255,255,.35), transparent)}
+  .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 0 0 3px var(--surface)}
+  .chat-top b{display:block;font-size:15px}
+  .chat-top small{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px}
+  .chat-top small i{width:7px;height:7px;border-radius:50%;background:#4cb782;display:block}
+  .disclaimer{margin-left:auto;font-size:10.5px;color:var(--muted);text-align:right;max-width:170px;line-height:1.3}
+  @media (max-width:520px){ .disclaimer{display:none} }
+
+  .msgs{flex:1;overflow-y:auto;padding:20px 18px;display:flex;flex-direction:column;gap:14px}
+  .msg{max-width:85%;padding:11px 15px;border-radius:18px;word-wrap:break-word;animation:in .25s ease-out}
+  @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .msg.bot{background:var(--surface);border:1px solid var(--border);border-top-left-radius:6px;align-self:flex-start}
+  .msg.user{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border-top-right-radius:6px;align-self:flex-end}
+  .msg.err{background:transparent;border:1px dashed var(--danger);color:var(--danger)}
+  .msg.wide{max-width:min(640px,96%)}
+  .msg ul,.msg ol{margin:6px 0;padding-left:20px}
+  .msg .note{display:block;margin-top:8px;font-size:12px;color:var(--muted)}
+  .shot{margin:10px 0 6px}
+  .shot a{display:block;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:var(--surface);transition:transform .2s, box-shadow .2s}
+  .shot a:hover{transform:scale(1.01);box-shadow:0 10px 24px rgba(92,48,64,.15)}
+  .shot img{display:block;width:100%;height:auto}
+  .shot figcaption{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .typing span{display:inline-block;width:7px;height:7px;margin-right:3px;border-radius:50%;background:var(--brand-2);animation:b 1s infinite}
+  .typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+  @keyframes b{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 12px}
+  .chip{border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;font-size:13px;padding:7px 13px;border-radius:999px;cursor:pointer;transition:all .2s}
+  .chip:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-1px)}
+  form.send{display:flex;gap:8px;padding:12px 14px 14px;border-top:1px solid var(--border)}
+  form.send input{flex:1;min-width:0;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;padding:12px 16px;border-radius:999px;outline:none}
+  form.send input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--petal)}
+  form.send button{border:0;width:46px;height:46px;flex:none;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;cursor:pointer;display:grid;place-items:center}
+  form.send button:disabled{opacity:.5;cursor:default}
+
+  footer{position:relative;z-index:1;border-top:1px solid var(--border);margin-top:8px}
+  footer .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 20px 26px;font-size:12.5px;color:var(--muted)}
+  footer b{color:var(--text);font-weight:600}
+  footer nav{margin-left:auto;display:flex;gap:14px}
+  footer a{color:var(--brand);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<!-- Ramos botânicos decorativos -->
+<svg class="botanic tl" viewBox="0 0 300 300" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+  <path d="M20 280 C 90 200, 150 140, 280 30"/>
+  <path d="M70 222 C 40 200, 30 170, 45 150 C 70 165, 80 195, 70 222Z"/>
+  <path d="M70 222 C 100 225, 125 210, 132 190 C 105 185, 82 200, 70 222Z"/>
+  <path d="M120 175 C 95 150, 92 120, 110 102 C 130 122, 132 152, 120 175Z"/>
+  <path d="M120 175 C 150 178, 172 162, 178 142 C 152 138, 130 152, 120 175Z"/>
+  <path d="M170 128 C 152 104, 152 76, 170 60 C 188 80, 186 106, 170 128Z"/>
+  <path d="M170 128 C 198 128, 218 112, 222 92 C 198 90, 178 104, 170 128Z"/>
+  <path d="M222 82 C 212 62, 216 42, 232 32 C 244 50, 238 70, 222 82Z"/>
+</svg>
+<svg class="botanic br" viewBox="0 0 300 300" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+  <path d="M20 280 C 90 200, 150 140, 280 30"/>
+  <path d="M70 222 C 40 200, 30 170, 45 150 C 70 165, 80 195, 70 222Z"/>
+  <path d="M70 222 C 100 225, 125 210, 132 190 C 105 185, 82 200, 70 222Z"/>
+  <path d="M120 175 C 95 150, 92 120, 110 102 C 130 122, 132 152, 120 175Z"/>
+  <path d="M120 175 C 150 178, 172 162, 178 142 C 152 138, 130 152, 120 175Z"/>
+  <path d="M170 128 C 152 104, 152 76, 170 60 C 188 80, 186 106, 170 128Z"/>
+  <path d="M170 128 C 198 128, 218 112, 222 92 C 198 90, 178 104, 170 128Z"/>
+</svg>
+<div class="orb a" aria-hidden="true"></div>
+<div class="orb b" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="lotus">
+        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+          <path d="M16 6c3 3.5 4 8 0 14c-4-6-3-10.5 0-14Z"/>
+          <path d="M16 20c-1-5-4.5-8.5-10-9c0 5.5 4 9 10 9Z"/>
+          <path d="M16 20c1-5 4.5-8.5 10-9c0 5.5-4 9-10 9Z"/>
+          <path d="M6 24c3 1.5 6.5 2 10 2s7-.5 10-2"/>
+        </svg>
+      </div>
+      <div><b>Essenza</b><small>Clínica de estética</small></div>
+    </div>
+    <a class="byline" href="https://brendacarmosa-create.github.io" target="_blank" rel="noopener" title="Ver portfólio da Brenda">
+      <span class="mono">BC</span>
+      <span>Um projeto de <b>Brenda Carmosa</b><em>Portfólio · Agentes de IA</em></span>
+    </a>
+  </header>
+
+  <main>
+    <section class="intro">
+      <span class="eyebrow">Assistente interno da equipe</span>
+      <h1>Dúvidas no caixa? <i>A Essenza te guia</i> passo a passo.</h1>
+      <p class="lead">Pergunte do seu jeito. A assistente responde com base no procedimento oficial da clínica e mostra as telas do FluxoCerto em cada etapa.</p>
+      <ul class="topics">
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>Cadastro de clientes</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Recebimentos</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Despesas e comprovantes</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Devoluções</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg>Saldo do caixa</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12l4 4L19 6"/></svg>Fechamento do dia</li>
+      </ul>
+      <div class="how">
+        <h2>Como funciona</h2>
+        <div class="flow">
+          <span>Sua pergunta</span><i>→</i><span>Agente de IA</span><i>→</i><span>POP oficial</span><i>→</i><span>Passo a passo com telas</span>
+        </div>
+        <div class="stack"><span>n8n</span><span>Google Gemini</span><span>HTML · CSS · JS</span><span>GitHub Pages</span></div>
+      </div>
+    </section>
+
+    <section class="chat" aria-label="Chat com a Assistente Essenza">
+      <div class="chat-top">
+        <div class="avatar">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+            <path d="M16 6c3 3.5 4 8 0 14c-4-6-3-10.5 0-14Z"/><path d="M16 20c-1-5-4.5-8.5-10-9c0 5.5 4 9 10 9Z"/><path d="M16 20c1-5 4.5-8.5 10-9c0 5.5-4 9-10 9Z"/>
+          </svg>
+        </div>
+        <div><b>Assistente Essenza</b><small><i></i>online · responde com base no POP</small></div>
+        <span class="disclaimer">Cenário fictício. As imagens são telas simuladas.</span>
+      </div>
+      <div class="msgs" id="msgs"></div>
+      <div class="chips" id="chips"></div>
+      <form class="send" id="form">
+        <input id="input" autocomplete="off" placeholder="Digite sua dúvida sobre o FluxoCerto..." maxlength="500" aria-label="Sua dúvida">
+        <button id="sendBtn" aria-label="Enviar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Projeto de portfólio de <b>Brenda Carmosa</b> · Economia e Inteligência de Mercado · A Clínica Essenza e o FluxoCerto são fictícios.</span>
+    <nav>
+      <a href="https://brendacarmosa-create.github.io" target="_blank" rel="noopener">Portfólio</a>
+      <a href="https://github.com/brendacarmosa-create" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/brenda-carmosa-30208b361/" target="_blank" rel="noopener">LinkedIn</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+/* ===================== CONFIGURAÇÃO =====================
+   Cole a "Chat URL" do nó "When chat message received" do n8n.
+   A chave do Gemini NÃO fica aqui: ela fica guardada no n8n. */
+const CONFIG = { N8N_CHAT_URL: "https://brendacarmosa.app.n8n.cloud/webhook/92203bde-70b1-4c3c-8473-06bb5791203a/chat" };
+/* ======================================================= */
+
+// Imagens do passo a passo (pasta /telas). O agente cita o código, ex.: [TELA:despesa-1]
+const TELAS = {
+  "cliente-1": "Clientes › pesquisar pelo CPF",
+  "cliente-2": "Clientes › Novo cliente",
+  "cliente-3": "Clientes › cadastro salvo",
+  "receb-1":   "Entradas › Novo recebimento",
+  "receb-2":   "Entradas › lista do dia e recibo",
+  "despesa-1": "Saídas › Nova despesa",
+  "despesa-2": "Saídas › lista do dia e aprovação",
+  "devol-1":   "Entradas › localizar o recebimento",
+  "devol-2":   "Entradas › registrar a devolução",
+  "saldo-1":   "Clientes › histórico de pagamentos",
+  "saldo-2":   "Caixa › Saldo do dia",
+  "fecha-1":   "Caixa › Fechar caixa (contagem)",
+  "fecha-2":   "Caixa › Fechar caixa (anexar e fechar)"
+};
+
+const $ = s => document.querySelector(s);
+const msgs = $("#msgs"), input = $("#input"), btn = $("#sendBtn");
+
+function getSession(){
+  let id = null;
+  try { id = sessionStorage.getItem("essenza_session"); } catch(e){}
+  if(!id){
+    id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
+    try { sessionStorage.setItem("essenza_session", id); } catch(e){}
+  }
+  return id;
+}
+const sessionId = getSession();
+
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function format(text){
+  const lines = esc(text).split("\n");
+  let html = "", list = null;
+  const close = () => { if(list){ html += `</${list}>`; list = null; } };
+  for(const raw of lines){
+    const line = raw.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    const ul = line.match(/^\s*[-*•]\s+(.*)/), ol = line.match(/^\s*(\d+)[.)]\s+(.*)/);
+    if(ul){ if(list !== "ul"){ close(); html += "<ul>"; list = "ul"; } html += `<li>${ul[1]}</li>`; continue; }
+    if(ol){ if(list !== "ol"){ close(); html += `<ol start="${ol[1]}">`; list = "ol"; } html += `<li>${ol[2]}</li>`; continue; }
+    close();
+    html += line.trim() ? line + "<br>" : "<br>";
+  }
+  close();
+  return html.replace(/(<br>)+$/, "");
+}
+// Troca cada [TELA:codigo] pela imagem correspondente
+function renderAnswer(text){
+  const parts = String(text).split(/\[\s*TELA\s*:\s*([a-z]+-\d+)\s*\]/gi);
+  return parts.map((part, i) => {
+    if(i % 2 === 0) return part.trim() ? format(part.trim()) : "";
+    const code = part.toLowerCase();
+    if(!TELAS[code]) return "";
+    const src = `telas/${code}.png`;
+    return `<figure class="shot"><a href="${src}" target="_blank" rel="noopener" title="Abrir imagem ampliada"><img src="${src}" alt="Tela do FluxoCerto: ${esc(TELAS[code])}" loading="lazy"></a><figcaption>📷 ${esc(TELAS[code])}</figcaption></figure>`;
+  }).join("");
+}
+function addMsg(text, who, note){
+  const d = document.createElement("div");
+  d.className = "msg " + who;
+  d.innerHTML = (who === "user" ? esc(text) : renderAnswer(text)) + (note ? `<span class="note">${esc(note)}</span>` : "");
+  if(d.querySelector(".shot")) d.classList.add("wide");
+  msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
+  return d;
+}
+
+addMsg("Oi! Eu sou a **Assistente Essenza** 🌸 Tiro suas dúvidas sobre o **FluxoCerto**: cadastro de clientes, recebimentos, despesas, devoluções, saldo e fechamento do caixa. Te explico o passo a passo com as telas do sistema.", "bot");
+
+// Respostas de demonstração: usadas quando o agente do n8n não está disponível
+const DEMO = {
+  "Como cadastro uma cliente nova?":
+    "Antes de tudo, confira se ela já tem cadastro:\n1. Em **Clientes**, pesquise pelo CPF.\n[TELA:cliente-1]\n2. Se não encontrar, clique em **Novo cliente** e preencha nome, CPF, telefone e data de nascimento. Marque o consentimento só depois que a cliente autorizar.\n[TELA:cliente-2]\n3. Clique em **Salvar**. O sistema gera o código da cliente.\n[TELA:cliente-3]",
+  "A cliente quer pagar parte no Pix e parte no cartão":
+    "Dá sim! Em **Entradas > Novo recebimento**, preencha cliente, procedimento e valor e use o botão **Dividir pagamento** para lançar cada parte na sua forma.\n[TELA:receb-1]\n- No cartão, informe o NSU da maquininha.\n- No Pix, confira o recebimento no app do banco antes de salvar.",
+  "Paguei um fornecedor em dinheiro, como lanço?":
+    "Em **Saídas > Nova despesa**, escolha o fornecedor e a categoria, informe o valor e selecione a forma **Dinheiro do caixa**.\n[TELA:despesa-1]\n- Isso conta como **sangria**: o valor sai do saldo em dinheiro da gaveta.\n- Não esqueça de anexar o comprovante, senão o sistema não salva.\n- Acima de R$ 500,00, a despesa precisa da aprovação da gerente.",
+  "O caixa não bateu no fim do dia, e agora?":
+    "Calma! Conte de novo e confira os lançamentos em dinheiro do dia.\n1. Em **Caixa > Fechar caixa**, informe o valor contado. O sistema mostra a diferença.\n[TELA:fecha-1]\n2. Diferença até R$ 5,00: registre a justificativa. Acima disso: chame a gerente antes de fechar.\n3. Anexe o relatório da maquininha e feche o caixa.\n[TELA:fecha-2]"
+};
+const DEMO_NOTE = "Resposta de demonstração: o agente online não está disponível agora.";
+Object.keys(DEMO).forEach(s => {
+  const c = document.createElement("button");
+  c.className = "chip"; c.type = "button"; c.textContent = s;
+  c.onclick = () => send(s);
+  $("#chips").appendChild(c);
+});
+
+async function send(text){
+  text = text.trim();
+  if(!text || btn.disabled) return;
+  addMsg(text, "user"); input.value = "";
+  $("#chips").style.display = "none";
+
+  if(!CONFIG.N8N_CHAT_URL){
+    if(DEMO[text]) addMsg(DEMO[text], "bot", DEMO_NOTE);
+    else addMsg("Modo demonstração: o agente ainda não está conectado ao n8n. Experimente uma das perguntas sugeridas.", "err");
+    return;
+  }
+
+  btn.disabled = true;
+  const t = addMsg("", "bot");
+  t.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
+  try{
+    const res = await fetch(CONFIG.N8N_CHAT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "sendMessage", sessionId, chatInput: text })
+    });
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const out = data.output ?? data.text ?? (Array.isArray(data) && data[0] && (data[0].output ?? data[0].text));
+    t.innerHTML = renderAnswer(out || "Não recebi resposta do agente.");
+    if(t.querySelector(".shot")) t.classList.add("wide");
+  }catch(e){
+    // Se o agente estiver fora do ar (ex.: trial do n8n encerrado), usa a resposta de demonstração
+    if(DEMO[text]){
+      t.innerHTML = renderAnswer(DEMO[text]) + `<span class="note">${esc(DEMO_NOTE)}</span>`;
+      if(t.querySelector(".shot")) t.classList.add("wide");
+    }else{
+      t.className = "msg err";
+      t.textContent = "Não consegui falar com o agente agora (" + e.message + "). Tente uma das perguntas sugeridas ou volte mais tarde.";
+    }
+  }finally{
+    btn.disabled = false; input.focus(); msgs.scrollTop = msgs.scrollHeight;
+  }
+}
+$("#form").onsubmit = e => { e.preventDefault(); send(input.value); };
+</script>
+</body>
+</html>
